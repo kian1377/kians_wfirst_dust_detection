@@ -15,10 +15,12 @@ def disk_through_hlc(fitsfile,
                      my_interp_fun,
                      xmas,
                      HLC_plate_scale_AS,
+                     n = 200,
                      thresh=1000,
                      display=False,
-                     x_extent=.5,y_extent=0.5,
+                     x_extent=0.5,y_extent=0.5,
                      load_existing=False,
+                     output_path = my_home_dir + "\KianDebesModels_HLC\\",
                      localzodi=0):
     
     if fitsfile.find("89") !=-1:
@@ -27,7 +29,7 @@ def disk_through_hlc(fitsfile,
     print("Running disk through HLC ...")
     zodi_fits = fits.open(fitsfile)
     fitsfile_parts = fitsfile.split("\\")
-    outfits = my_home_dir+"\KianDebesModels_OS5\\"+fitsfile_parts[-2]+"\\" + fitsfile_parts[-1][:-5]+"_HLC_"+str(thresh)+'.fits'
+    outfits = output_path + fitsfile_parts[-2]+"\\" + fitsfile_parts[-1][:-5]+"_HLC_"+str(thresh)+'.fits'
     print("\nInput file: ")
     print(fitsfile)
     print("\nOutput file: ")
@@ -39,14 +41,14 @@ def disk_through_hlc(fitsfile,
     zodi = np.ma.masked_array(zodi_fits[0].data, zodi_fits[0].data < zodi_fits[0].data.max()/thresh)
     zodi_fits[0].data = zodi
     
-    n = 128
     zodi_pixscale = zodi_fits[0].header["PIXELSCL"]*u.arcsecond
 
     pixnum = np.int(zodi_fits[0].data.shape[0])
+    
     x,y = np.meshgrid(np.arange(-pixnum/2,pixnum/2),np.arange(-pixnum/2,pixnum/2))
     x = (x+.5).flatten()*zodi_pixscale
-
     y = (y+.5).flatten()*zodi_pixscale
+    
     im = np.zeros([n,n])
 
     zodi.mask#[zodi<zodi.max()/100] = True
@@ -70,7 +72,9 @@ def disk_through_hlc(fitsfile,
                                                                              my_interp_fun,
                                                                              xmas,
                                                                              HLC_plate_scale_AS,
-                                                                             n=128)
+                                                                             n=n)
+        im = im.T
+        
     if display:
         halfpix = zodi_pixscale.to(u.arcsec).value*0.5
         extent = ([x.min().to(u.arcsec).value-halfpix,
@@ -96,11 +100,11 @@ def disk_through_hlc(fitsfile,
         x,y = np.meshgrid(np.arange(-pixnum/2,pixnum/2),np.arange(-pixnum/2,pixnum/2))
         x = (x+.5).flatten()*HLC_plate_scale_AS
         y = (y+.5).flatten()*HLC_plate_scale_AS
-        halfpix = .05*HLC_plate_scale_AS.value
+        halfpix = .5*HLC_plate_scale_AS.value
         extent = ([x.min().to(u.arcsec).value-halfpix,
-        x.max().to(u.arcsec).value+halfpix, 
-        y.min().to(u.arcsec).value-halfpix,
-        y.max().to(u.arcsec).value+halfpix])
+                   x.max().to(u.arcsec).value+halfpix, 
+                   y.min().to(u.arcsec).value-halfpix,
+                   y.max().to(u.arcsec).value+halfpix])
         plt.imshow(im.T,extent=extent)
         plt.colorbar()
         plt.title("HLC Image of Included Flux")
