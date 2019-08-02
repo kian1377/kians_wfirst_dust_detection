@@ -53,8 +53,10 @@ def disk_through_hlc(fitsfile,
 
     zodi.mask#[zodi<zodi.max()/100] = True
     
+    """
     if display:
         plt.imshow(zodi)
+    """
     
     try:
         if load_existing:
@@ -73,18 +75,18 @@ def disk_through_hlc(fitsfile,
                                                                              xmas,
                                                                              HLC_plate_scale_AS,
                                                                              n=n)
-        im = im.T
+        im = im.T # take the transpose of the image
         
     if display:
+        
+        plt.figure(figsize=[9,4])
+        
+        plt.subplot(121)
         halfpix = zodi_pixscale.to(u.arcsec).value*0.5
         extent = ([x.min().to(u.arcsec).value-halfpix,
                    x.max().to(u.arcsec).value+halfpix, 
                    y.min().to(u.arcsec).value-halfpix,
                    y.max().to(u.arcsec).value+halfpix])
-        
-        plt.figure(figsize=[9,4])
-        
-        plt.subplot(121)
         plt.title("Input Flux")
         plt.xlim([-x_extent,x_extent])
         plt.ylim([-y_extent,y_extent])
@@ -105,7 +107,7 @@ def disk_through_hlc(fitsfile,
                    x.max().to(u.arcsec).value+halfpix, 
                    y.min().to(u.arcsec).value-halfpix,
                    y.max().to(u.arcsec).value+halfpix])
-        plt.imshow(im.T,extent=extent)
+        plt.imshow(im,extent=extent)
         plt.colorbar()
         plt.title("HLC Image of Included Flux")
         plt.xlim([-x_extent,x_extent])
