@@ -1,4 +1,5 @@
 from importlib import reload
+from pathlib import Path
 import hlc_processing
 reload(hlc_processing)
 
@@ -20,18 +21,34 @@ def disk_through_hlc(fitsfile,
                      display=False,
                      x_extent=0.5,y_extent=0.5,
                      load_existing=False,
-                     output_path = my_home_dir + "\KianDebesModels_HLC\\",
                      localzodi=0):
     
     if fitsfile.find("89") !=-1:
         thresh=50000
     
     print("Running disk through HLC ...")
-    zodi_fits = fits.open(fitsfile)
-    fitsfile_parts = fitsfile.split("\\")
-    outfits = output_path + fitsfile_parts[-2]+"\\" + fitsfile_parts[-1][:-5]+"_HLC_"+str(thresh)+'.fits'
+    
+    my_home_path = Path(os.getcwd())
+    debes_path = my_home_path/'DebesModels'
+    
+    debes_out_path = my_home_path/'KianDebesModels_HLC'
+    if "annulus" in fitsfile:
+        fits_path = debes_path/"Model_Annulus"/fitsfile
+        outfits = debes_out_path/"Model_Annulus"/(fitsfile[:-5]+"_HLC_"+str(thresh)+'.fits')
+    if "constanttau" in fitsfile:
+        fits_path = debes_path/"Model_ConstantTau"/fitsfile
+        outfits = debes_out_path/"Model_ConstantTau"/(fitsfile[:-5]+"_HLC_"+str(thresh)+'.fits')
+    if "gap" in fitsfile:
+        fits_path = debes_path/"Model_GAP"/fitsfile
+        outfits = debes_out_path/"Model_GAP"/(fitsfile[:-5]+"_HLC_"+str(thresh)+'.fits')
+    if "ring" in fitsfile:
+        fits_path = debes_path/"Model_Ring"/fitsfile
+        outfits = debes_out_path/"Model_Ring"/(fitsfile[:-5]+"_HLC_"+str(thresh)+'.fits')
+    
+    zodi_fits = fits.open(fits_path)
+    
     print("\nInput file: ")
-    print(fitsfile)
+    print(fits_path)
     print("\nOutput file: ")
     print(outfits)
 
